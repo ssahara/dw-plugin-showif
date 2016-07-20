@@ -33,7 +33,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     }
     function getSort(){ return 196; } //was 168
     function connectTo($mode) {
-        $this->Lexer->addEntryPattern('<showif.*?>(?=.*?</showif>)',$mode,'plugin_showif');
+        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)',$mode,'plugin_showif');
     }
     function postConnect() {
         $this->Lexer->addExitPattern('</showif>','plugin_showif');

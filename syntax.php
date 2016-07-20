@@ -20,7 +20,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     }
     function getSort(){ return 168; } //196? I have no clue ...
     function connectTo($mode) {
-        $this->Lexer->addEntryPattern('<showif.*?>(?=.*?</showif>)',$mode,'plugin_showif');
+        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)',$mode,'plugin_showif');
     }
     function postConnect() {
         $this->Lexer->addExitPattern('</showif>','plugin_showif');
