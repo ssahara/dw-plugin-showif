@@ -1,8 +1,10 @@
 <?php
 
 /**
- * This actually looks like the better implementation but I run into some caching issues on Angua with this. On Adora Belle it seemed ok.
- * It is possible that the problems were spurious and only due to an unnatural situation when switching identities and rights in testing
+ * This actually looks like the better implementation but I run into some
+ * caching issues on Angua with this. On Adora Belle it seemed ok.
+ * It is possible that the problems were spurious and only due to an unnatural
+ * situation when switching identities and rights in testing
  * Test before adopting this code!
  */
 
@@ -11,15 +13,15 @@ if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
-//new function
-function accepts($mode){
-    return true;
-}
+    //new function
+    function accepts($mode){
+        return true;
+    }
 
-function getType(){ return 'container'; } //was formatting
-function getPType(){ return 'stack'; }
-function getAllowedTypes() {
-    return array(
+    function getType(){ return 'container'; } //was formatting
+    function getPType(){ return 'stack'; }
+    function getAllowedTypes() {
+        return array(
             'container',
             'formatting',
             'substition',
@@ -27,15 +29,15 @@ function getAllowedTypes() {
             'disabled',
             'paragraphs',
             'baseonly' //new
-    );
-}
-function getSort(){ return 196; } //was 168
-function connectTo($mode) {
-    $this->Lexer->addEntryPattern('<showif.*?>(?=.*?</showif>)',$mode,'plugin_showif');
-}
-function postConnect() {
-    $this->Lexer->addExitPattern('</showif>','plugin_showif');
-}
+        );
+    }
+    function getSort(){ return 196; } //was 168
+    function connectTo($mode) {
+        $this->Lexer->addEntryPattern('<showif.*?>(?=.*?</showif>)',$mode,'plugin_showif');
+    }
+    function postConnect() {
+        $this->Lexer->addExitPattern('</showif>','plugin_showif');
+    }
 
 
     /**

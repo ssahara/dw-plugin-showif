@@ -5,10 +5,10 @@ if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
-function getType(){ return 'container'; }
-function getPType(){ return 'stack'; }
-function getAllowedTypes() {
-    return array(
+    function getType(){ return 'container'; }
+    function getPType(){ return 'stack'; }
+    function getAllowedTypes() {
+        return array(
             'container',
             'formatting',
             'substition',
@@ -16,15 +16,15 @@ function getAllowedTypes() {
             'disabled',
             'paragraphs',
             'baseonly' //new
-    );
-}
-function getSort(){ return 168; } //196? I have no clue ...
-function connectTo($mode) {
-    $this->Lexer->addEntryPattern('<showif.*?>(?=.*?</showif>)',$mode,'plugin_showif');
-}
-function postConnect() {
-    $this->Lexer->addExitPattern('</showif>','plugin_showif');
-}
+        );
+    }
+    function getSort(){ return 168; } //196? I have no clue ...
+    function connectTo($mode) {
+        $this->Lexer->addEntryPattern('<showif.*?>(?=.*?</showif>)',$mode,'plugin_showif');
+    }
+    function postConnect() {
+        $this->Lexer->addExitPattern('</showif>','plugin_showif');
+    }
 
 
     /**
