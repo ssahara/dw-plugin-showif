@@ -22,11 +22,13 @@ if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
-    //new function
-    function accepts($mode){
-        return true;
+    protected $mode;
+
+    public function __construct() {
+        $this->mode = substr(get_class($this), 7); // drop 'syntax_'
     }
 
+    function getSort(){ return 196; } //was 168
     function getType(){ return 'container'; } //was formatting
     function getPType(){ return 'stack'; }
     function getAllowedTypes() {
@@ -40,13 +42,16 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             'baseonly'
         );
     }
-    function getSort(){ return 196; } //was 168
+
+    function accepts($mode){
+        return true;
+    }
 
     function connectTo($mode) {
-        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)',$mode,'plugin_showif');
+        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)', $mode, $this->mode);
     }
     function postConnect() {
-        $this->Lexer->addExitPattern('</showif>','plugin_showif');
+        $this->Lexer->addExitPattern('</showif>', $this->mode);
     }
 
 
@@ -58,13 +63,13 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         switch ($state) {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
-            $conditions = trim(substr($match, 8, -1));
+            $conditions = substr($match, 8, -1);
             // explode wanted auths
-            $this->conditions = explode(",", $conditions);
+            $this->conditions = array_map('trim', explode(",", $conditions));
 
             // FIXME remember conditions here
 
-            $ReWriter = new Doku_Handler_Nest($handler->CallWriter,'plugin_showif');
+            $ReWriter = new Doku_Handler_Nest($handler->CallWriter, $this->mode);
             $handler->CallWriter = & $ReWriter;
             // don't add any plugin instruction:
             return false;
@@ -104,24 +109,33 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
             $show = FALSE;
             // Loop through conditions
-            foreach ($conditions as $val) { 
-                // All conditions have to be true
-                if (
-                    (($val == "mayedit") && (auth_quickaclcheck($ID)) >= AUTH_EDIT)
-                    ||
-                    //mayonlyread will be hidden for an administrator!
-                    (($val == "mayonlyread") && (auth_quickaclcheck($ID)) == AUTH_READ)
-                    ||
-                    (($val == "mayatleastread") && (auth_quickaclcheck($ID)) >= AUTH_READ)
-                    ||
-                    ($val == "isloggedin" && ($_SERVER['REMOTE_USER']))
-                    ||
-                    ($val == "isnotloggedin" && !($_SERVER['REMOTE_USER']))
-                    ||
-                    (($val == "isadmin") && ($INFO['isadmin'] || $INFO['ismanager'] ))
-                ) $show = TRUE;
-                else {$show = FALSE; break;}
+            foreach ($conditions as $condition) {
+                $check = false;
+                switch ($condition) {
+                    case 'mayedit':
+                        $check = (bool)(auth_quickaclcheck($ID) >= AUTH_EDIT);
+                        break;
+                    case 'mayonlyread':
+                        //mayonlyread will be hidden for an administrator!
+                        $check = (bool)(auth_quickaclcheck($ID) == AUTH_READ);
+                        break;
+                    case 'mayatleastread':
+                        $check = (bool)(auth_quickaclcheck($ID) >= AUTH_READ);
+                        break;
+                    case 'isloggedin':
+                        $check = (bool)($_SERVER['REMOTE_USER']);
+                        break;
+                    case 'isnotloggedin':
+                        $check = !($_SERVER['REMOTE_USER']);
+                        break;
+                    case 'isadmin':
+                        $check = (bool)($INFO['isadmin'] || $INFO['ismanager']);
+                        break;
+                }
+                //error_log($this->getPluginName().': '.$condition.' ='.$check);
+                if ($check == false) break;
             }
+            $show = $check; // true if all conditions passed, else false
 
             if ($show) {
                 foreach ($calls as $i) {
