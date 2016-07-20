@@ -1,20 +1,8 @@
 <?php
 
-/**
- * All DokuWiki plugins to extend the parser/rendering mechanism
- * need to inherit from this class
- */
-
 // must be run within DokuWiki
 if(!defined('DOKU_INC')) die();
 
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-require_once(DOKU_PLUGIN.'syntax.php');
-
-/**
- * All DokuWiki plugins to extend the parser/rendering mechanism
- * need to inherit from this class
- */
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
 function getType(){ return 'container'; }
@@ -44,15 +32,16 @@ function postConnect() {
      */
     function handle($match, $state, $pos, &$handler){
 
-
         switch ($state) {
-          case DOKU_LEXER_ENTER : 
+          case DOKU_LEXER_ENTER :
             // remove <showif and >
             $args  = trim(substr($match, 8, -1)); // $arg will be loggedin or mayedit
             return array($state, explode(",",$args));
 
-          case DOKU_LEXER_UNMATCHED : return array($state, $match);
-          case DOKU_LEXER_EXIT : return array($state, '');
+          case DOKU_LEXER_UNMATCHED :
+            return array($state, $match);
+          case DOKU_LEXER_EXIT :
+            return array($state, '');
         }
 
         return array();
@@ -95,12 +84,19 @@ function postConnect() {
                 }
                 //always open a div so DOKU_LEXER_EXIT can close it without checking state
                 // perhaps display:inline?
-                if ($show == 1) $renderer->doc .= "<div>";
-                elseif ($show == 0) $renderer->doc .= "<div style='display:none'>";
+                if ($show == 1) {
+                    $renderer->doc .= "<div>";
+                } elseif ($show == 0) {
+                    $renderer->doc .= "<div style='display:none'>";
+                }
                 break;
 
-                case DOKU_LEXER_UNMATCHED : $renderer->doc .= $renderer->_xmlEntities($match); break;
-                case DOKU_LEXER_EXIT : $renderer->doc .= "</div>"; break;
+              case DOKU_LEXER_UNMATCHED :
+                $renderer->doc .= $renderer->_xmlEntities($match);
+                break;
+              case DOKU_LEXER_EXIT :
+                $renderer->doc .= "</div>";
+                break;
             }
             return true;
         }

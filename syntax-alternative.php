@@ -6,22 +6,9 @@
  * Test before adopting this code!
  */
 
-
-/**
- * All DokuWiki plugins to extend the parser/rendering mechanism
- * need to inherit from this class
- */
-
 // must be run within DokuWiki
 if(!defined('DOKU_INC')) die();
 
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-require_once(DOKU_PLUGIN.'syntax.php');
-
-/**
- * All DokuWiki plugins to extend the parser/rendering mechanism
- * need to inherit from this class
- */
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
 //new function
@@ -57,7 +44,7 @@ function postConnect() {
     function handle($match, $state, $pos, &$handler){
 
         switch ($state) {
-          case DOKU_LEXER_ENTER : 
+          case DOKU_LEXER_ENTER :
             // remove <showif and >
             $conditions = trim(substr($match, 8, -1));
             // explode wanted auths
@@ -126,8 +113,8 @@ function postConnect() {
             }
 
             if ($show) {
-                foreach($calls as $i){
-                    if(method_exists($renderer,$i[0])){
+                foreach ($calls as $i) {
+                    if (method_exists($renderer,$i[0])) {
                         call_user_func_array(array($renderer,$i[0]),$i[1]);
                     }
                 }
