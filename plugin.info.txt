@@ -2,7 +2,7 @@
 base   showif
 author Harald Ronge
 email  harald[at]turtur.nl
-date   2013-10-15
+date   2016-07-20 development branch
 name   ShowIf Plugin
 desc   Show text if some condition is true.
 url    http://www.dokuwiki.org/plugin:showif
