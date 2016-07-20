@@ -1,4 +1,13 @@
 <?php
+/**
+ * Showif plugin for DokuWiki
+ *
+ * Shows text only if all of given conditions are true.
+ * Lazy hiding based on plugin nodisp by Myron Turnner.
+ *
+ * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author  Harald Ronge <harald@turtur.nl>
+ */
 
 // must be run within DokuWiki
 if(!defined('DOKU_INC')) die();
@@ -15,10 +24,11 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             'protected',
             'disabled',
             'paragraphs',
-            'baseonly' //new
+            'baseonly'
         );
     }
     function getSort(){ return 168; } //196? I have no clue ...
+
     function connectTo($mode) {
         $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)',$mode,'plugin_showif');
     }
@@ -51,28 +61,28 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
      * Create output
      */
     function render($format, Doku_Renderer $renderer, $data) {
-        global $INFO;
+        global $ID, $INFO;
 
-        if($format == 'xhtml'){
+        if ($format == 'xhtml') {
             $renderer->nocache(); // disable caching
+
             list($state, $match) = $data;
 
             switch ($state) {
               case DOKU_LEXER_ENTER :
                 $show = 0;
-                //$i = 0;
                 $conditions = $match;
                 // Loop through conditions
                 foreach($conditions as $val) { 
                     // All conditions have to be true
                     if
                     (
-                        (($val == "mayedit") && (auth_quickaclcheck($INFO['id'])) >= AUTH_EDIT)
+                        (($val == "mayedit") && (auth_quickaclcheck($ID)) >= AUTH_EDIT)
                         ||
                         //mayonlyread will be hidden for an administrator!
-                        (($val == "mayonlyread") && (auth_quickaclcheck($INFO['id'])) == AUTH_READ)
+                        (($val == "mayonlyread") && (auth_quickaclcheck($ID)) == AUTH_READ)
                         ||
-                        (($val == "mayatleastread") && (auth_quickaclcheck($INFO['id'])) >= AUTH_READ)
+                        (($val == "mayatleastread") && (auth_quickaclcheck($ID)) >= AUTH_READ)
                         ||
                         ($val == "isloggedin" && ($_SERVER['REMOTE_USER']))
                         ||
