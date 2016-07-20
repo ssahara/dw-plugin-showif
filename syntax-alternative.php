@@ -43,7 +43,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     /**
      * Handle the match
      */
-    function handle($match, $state, $pos, &$handler){
+    function handle($match, $state, $pos, Doku_Handler $handler){
 
         switch ($state) {
           case DOKU_LEXER_ENTER :
@@ -83,10 +83,10 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     /**
      * Create output
      */
-    function render($mode, &$renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         global $INFO;
 
-        if($mode == 'xhtml'){
+        if($format == 'xhtml'){
             $renderer->nocache(); // disable caching
             list($state, $calls, $conditions) = $data;
             if($state != DOKU_LEXER_EXIT) return true;
