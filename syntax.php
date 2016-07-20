@@ -50,7 +50,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     /**
      * Create output
      */
-    function render($foramt, Doku_Renderer $renderer, $data) {
+    function render($format, Doku_Renderer $renderer, $data) {
         global $INFO;
 
         if($format == 'xhtml'){
@@ -58,7 +58,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             list($state, $match) = $data;
 
             switch ($state) {
-              case DOKU_LEXER_ENTER : 
+              case DOKU_LEXER_ENTER :
                 $show = 0;
                 //$i = 0;
                 $conditions = $match;
