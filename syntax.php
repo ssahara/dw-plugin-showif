@@ -9,12 +9,25 @@
  * @author  Harald Ronge <harald@turtur.nl>
  */
 
+/**
+ * This actually looks like the better implementation but I run into some
+ * caching issues on Angua with this. On Adora Belle it seemed ok.
+ * It is possible that the problems were spurious and only due to an unnatural
+ * situation when switching identities and rights in testing
+ * Test before adopting this code!
+ */
+
 // must be run within DokuWiki
 if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
-    function getType(){ return 'container'; }
+    //new function
+    function accepts($mode){
+        return true;
+    }
+
+    function getType(){ return 'container'; } //was formatting
     function getPType(){ return 'stack'; }
     function getAllowedTypes() {
         return array(
@@ -27,7 +40,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             'baseonly'
         );
     }
-    function getSort(){ return 168; } //196? I have no clue ...
+    function getSort(){ return 196; } //was 168
 
     function connectTo($mode) {
         $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)',$mode,'plugin_showif');
@@ -45,16 +58,36 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         switch ($state) {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
-            $args  = trim(substr($match, 8, -1)); // $arg will be loggedin or mayedit
-            return array($state, explode(",",$args));
+            $conditions = trim(substr($match, 8, -1));
+            // explode wanted auths
+            $this->conditions = explode(",", $conditions);
+
+            // FIXME remember conditions here
+
+            $ReWriter = new Doku_Handler_Nest($handler->CallWriter,'plugin_showif');
+            $handler->CallWriter = & $ReWriter;
+            // don't add any plugin instruction:
+            return false;
 
           case DOKU_LEXER_UNMATCHED :
-            return array($state, $match);
+            // unmatched data is cdata
+            $handler->_addCall('cdata', array($match), $pos);
+            // don't add any plugin instruction:
+            return false;
+
           case DOKU_LEXER_EXIT :
-            return array($state, '');
+            // get all calls we intercepted
+            $calls = $handler->CallWriter->calls;
+
+            // switch back to the old call writer
+            $ReWriter = & $handler->CallWriter;
+            $handler->CallWriter = & $ReWriter->CallWriter;
+
+            // return a plugin instruction
+            return array($state, $calls, $this->conditions);
         }
 
-        return array();
+        return false;
     }
 
     /**
@@ -66,47 +99,36 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         if ($format == 'xhtml') {
             $renderer->nocache(); // disable caching
 
-            list($state, $match) = $data;
+            list($state, $calls, $conditions) = $data;
+            if ($state != DOKU_LEXER_EXIT) return true;
 
-            switch ($state) {
-              case DOKU_LEXER_ENTER :
-                $show = 0;
-                $conditions = $match;
-                // Loop through conditions
-                foreach($conditions as $val) { 
-                    // All conditions have to be true
-                    if
-                    (
-                        (($val == "mayedit") && (auth_quickaclcheck($ID)) >= AUTH_EDIT)
-                        ||
-                        //mayonlyread will be hidden for an administrator!
-                        (($val == "mayonlyread") && (auth_quickaclcheck($ID)) == AUTH_READ)
-                        ||
-                        (($val == "mayatleastread") && (auth_quickaclcheck($ID)) >= AUTH_READ)
-                        ||
-                        ($val == "isloggedin" && ($_SERVER['REMOTE_USER']))
-                        ||
-                        ($val == "isnotloggedin" && !($_SERVER['REMOTE_USER']))
-                        ||
-                        (($val == "isadmin") && ($INFO['isadmin'] || $INFO['ismanager'] ))
-                    ) $show = 1;
-                    else {$show = 0; break;}
-                }
-                //always open a div so DOKU_LEXER_EXIT can close it without checking state
-                // perhaps display:inline?
-                if ($show == 1) {
-                    $renderer->doc .= "<div>";
-                } elseif ($show == 0) {
-                    $renderer->doc .= "<div style='display:none'>";
-                }
-                break;
+            $show = FALSE;
+            // Loop through conditions
+            foreach ($conditions as $val) { 
+                // All conditions have to be true
+                if (
+                    (($val == "mayedit") && (auth_quickaclcheck($ID)) >= AUTH_EDIT)
+                    ||
+                    //mayonlyread will be hidden for an administrator!
+                    (($val == "mayonlyread") && (auth_quickaclcheck($ID)) == AUTH_READ)
+                    ||
+                    (($val == "mayatleastread") && (auth_quickaclcheck($ID)) >= AUTH_READ)
+                    ||
+                    ($val == "isloggedin" && ($_SERVER['REMOTE_USER']))
+                    ||
+                    ($val == "isnotloggedin" && !($_SERVER['REMOTE_USER']))
+                    ||
+                    (($val == "isadmin") && ($INFO['isadmin'] || $INFO['ismanager'] ))
+                ) $show = TRUE;
+                else {$show = FALSE; break;}
+            }
 
-              case DOKU_LEXER_UNMATCHED :
-                $renderer->doc .= $renderer->_xmlEntities($match);
-                break;
-              case DOKU_LEXER_EXIT :
-                $renderer->doc .= "</div>";
-                break;
+            if ($show) {
+                foreach ($calls as $i) {
+                    if (method_exists($renderer, $i[0])) {
+                        call_user_func_array(array($renderer,$i[0]), $i[1]);
+                    }
+                }
             }
             return true;
         }
