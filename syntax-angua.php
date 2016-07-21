@@ -14,6 +14,13 @@ if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
+    protected $mode;
+
+    public function __construct() {
+        $this->mode = substr(get_class($this), 7); // drop 'syntax_'
+    }
+
+    function getSort(){ return 168; } //196? I have no clue ...
     function getType(){ return 'container'; }
     function getPType(){ return 'stack'; }
     function getAllowedTypes() {
@@ -27,13 +34,12 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             'baseonly'
         );
     }
-    function getSort(){ return 168; } //196? I have no clue ...
 
     function connectTo($mode) {
-        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)',$mode,'plugin_showif');
+        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)', $mode, $this->mode);
     }
     function postConnect() {
-        $this->Lexer->addExitPattern('</showif>','plugin_showif');
+        $this->Lexer->addExitPattern('</showif>', $this->mode);
     }
 
 
@@ -45,8 +51,8 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         switch ($state) {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
-            $args  = trim(substr($match, 8, -1)); // $arg will be loggedin or mayedit
-            return array($state, explode(",",$args));
+            $match = substr($match, 8, -1);
+            return array($state, $match);
 
           case DOKU_LEXER_UNMATCHED :
             return array($state, $match);
@@ -70,33 +76,42 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
             switch ($state) {
               case DOKU_LEXER_ENTER :
-                $show = 0;
-                $conditions = $match;
+                $show = false;
+                $conditions = array_map('trim', explode(",", $match));
                 // Loop through conditions
-                foreach($conditions as $val) { 
-                    // All conditions have to be true
-                    if
-                    (
-                        (($val == "mayedit") && (auth_quickaclcheck($ID)) >= AUTH_EDIT)
-                        ||
+                foreach ($conditions as $condition) {
+                    $check = false;
+                    switch ($condition) {
+                    case 'mayedit':
+                        $check = (bool)(auth_quickaclcheck($ID) >= AUTH_EDIT);
+                        break;
+                    case 'mayonlyread':
                         //mayonlyread will be hidden for an administrator!
-                        (($val == "mayonlyread") && (auth_quickaclcheck($ID)) == AUTH_READ)
-                        ||
-                        (($val == "mayatleastread") && (auth_quickaclcheck($ID)) >= AUTH_READ)
-                        ||
-                        ($val == "isloggedin" && ($_SERVER['REMOTE_USER']))
-                        ||
-                        ($val == "isnotloggedin" && !($_SERVER['REMOTE_USER']))
-                        ||
-                        (($val == "isadmin") && ($INFO['isadmin'] || $INFO['ismanager'] ))
-                    ) $show = 1;
-                    else {$show = 0; break;}
+                        $check = (bool)(auth_quickaclcheck($ID) == AUTH_READ);
+                        break;
+                    case 'mayatleastread':
+                        $check = (bool)(auth_quickaclcheck($ID) >= AUTH_READ);
+                        break;
+                    case 'isloggedin':
+                        $check = (bool)($_SERVER['REMOTE_USER']);
+                        break;
+                    case 'isnotloggedin':
+                        $check = !($_SERVER['REMOTE_USER']);
+                        break;
+                    case 'isadmin':
+                        $check = (bool)($INFO['isadmin'] || $INFO['ismanager']);
+                        break;
+                    }
+                    //error_log($this->getPluginName().': '.$condition.' ='.$check);
+                    if ($check == false) break;
                 }
+                $show = $check; // true if all conditions passed, else false
+
                 //always open a div so DOKU_LEXER_EXIT can close it without checking state
                 // perhaps display:inline?
-                if ($show == 1) {
+                if ($show == true) {
                     $renderer->doc .= "<div>";
-                } elseif ($show == 0) {
+                } elseif ($show == false) {
                     $renderer->doc .= "<div style='display:none'>";
                 }
                 break;
