@@ -28,8 +28,8 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         $this->mode = substr(get_class($this), 7); // drop 'syntax_'
     }
 
-    function getSort(){ return 196; } //was 168
-    function getType(){ return 'container'; } //was formatting
+    function getSort(){ return 196; }
+    function getType(){ return 'container'; }
     function getPType(){ return 'stack'; }
     function getAllowedTypes() {
         return array(
@@ -66,8 +66,6 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             $conditions = substr($match, 8, -1);
             // explode wanted auths
             $this->conditions = array_map('trim', explode(",", $conditions));
-
-            // FIXME remember conditions here
 
             $ReWriter = new Doku_Handler_Nest($handler->CallWriter, $this->mode);
             $handler->CallWriter = & $ReWriter;
@@ -111,7 +109,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             // Loop through conditions
             foreach ($conditions as $condition) {
                 $check = false;
-                switch ($condition) {
+                switch (mb_strtolower($condition, 'UTF-8')) {
                     case 'mayedit':
                         $check = (bool)(auth_quickaclcheck($ID) >= AUTH_EDIT);
                         break;
@@ -120,6 +118,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
                         $check = (bool)(auth_quickaclcheck($ID) == AUTH_READ);
                         break;
                     case 'mayatleastread':
+                    case 'mayread':
                         $check = (bool)(auth_quickaclcheck($ID) >= AUTH_READ);
                         break;
                     case 'isloggedin':
