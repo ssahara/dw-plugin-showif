@@ -1,9 +1,12 @@
 # ShowIf Plugin for DokuWiki
 
 Shows text only if all of some conditions are true.
-Lazy hiding based on plugin nodisp from Myron Turner.
+implemented using the DokuWiki built-in generic call writer class `Doku_Handler_Nest`
+to handle nesting of rendering instructions within a render instruction.
 
-Syntax is \<showif [condition1], [condition2], ...\>[text]\</showif\>
+Syntax
+
+    <showif [condition1], [condition2], ...>[text]</showif>
 
 Supported conditions are:
 
