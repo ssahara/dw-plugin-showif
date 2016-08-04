@@ -64,6 +64,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
             $conditions = substr($match, 8, -1);
+            $conditions = mb_strtolower($condition, 'UTF-8');
             // explode wanted auths
             $this->conditions = array_map('trim', explode(",", $conditions));
 
@@ -109,7 +110,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             // Loop through conditions
             foreach ($conditions as $condition) {
                 $check = false;
-                switch (mb_strtolower($condition, 'UTF-8')) {
+                switch ($condition) {
                     case 'mayedit':
                         $check = (bool)(auth_quickaclcheck($ID) >= AUTH_EDIT);
                         break;

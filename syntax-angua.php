@@ -52,6 +52,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
             $match = substr($match, 8, -1);
+            $match = mb_strtolower($match, 'UTF-8');
             return array($state, $match);
 
           case DOKU_LEXER_UNMATCHED :
