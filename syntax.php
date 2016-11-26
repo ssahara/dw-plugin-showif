@@ -64,7 +64,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
             $conditions = substr($match, 8, -1);
-            $conditions = mb_strtolower($condition, 'UTF-8');
+            $conditions = mb_strtolower($conditions, 'UTF-8');
             // explode wanted auths
             $this->conditions = array_map('trim', explode(",", $conditions));
 
