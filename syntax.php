@@ -22,7 +22,12 @@ if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
+    // match patterns
+    protected $entry_pattern = '<showif\b.*?>(?=.*?</showif>)';
+    protected $exit_pattern  = '</showif>';
+
     protected $mode;
+    protected $conditions;
 
     public function __construct() {
         $this->mode = substr(get_class($this), 7); // drop 'syntax_'
@@ -48,10 +53,10 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     }
 
     function connectTo($mode) {
-        $this->Lexer->addEntryPattern('<showif\b.*?>(?=.*?</showif>)', $mode, $this->mode);
+        $this->Lexer->addEntryPattern($this->entry_pattern, $mode, $this->mode);
     }
     function postConnect() {
-        $this->Lexer->addExitPattern('</showif>', $this->mode);
+        $this->Lexer->addExitPattern($this->exit_pattern, $this->mode);
     }
 
 
