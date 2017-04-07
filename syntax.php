@@ -136,6 +136,34 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
                     case 'isadmin':
                         $check = (bool)($INFO['isadmin'] || $INFO['ismanager']);
                         break;
+                    default:
+                        if (!isset($INFO['userinfo'])) break;
+
+                        // member of group
+                        if ('member of ' == substr($condition, 0, 10)) {
+                            $group = ltrim(substr($condition, 10));
+                            $check = in_array($group, $INFO['userinfo']['grps']);
+                            break;
+                        }
+                        // not member of group
+                        if ('not member of ' == substr($condition, 0, 14)) {
+                            $group = ltrim(substr($condition, 14));
+                            $check = !in_array($group, $INFO['userinfo']['grps']);
+                            break;
+                        }
+
+                        // client username
+                        if ('client ' == substr($condition, 0, 7)) {
+                            $client = ltrim(substr($condition, 7));
+                            $check = (bool)($INFO['client'] === $client);
+                            break;
+                        }
+                        // not client username
+                        if ('not client ' == substr($condition, 0,11)) {
+                            $client = ltrim(substr($condition, 11));
+                            $check = (bool)($INFO['client'] !== $client);
+                            break;
+                        }
                 }
                 //error_log($this->getPluginName().': '.$condition.' ='.$check);
                 if ($check == false) break;

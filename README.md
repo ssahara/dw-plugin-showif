@@ -16,6 +16,8 @@ Supported conditions are:
 4. mayAtleastRead or mayRead
 5. mayEdit
 6. isAdmin
+7. member of *group*  or  not member of *group*
+8. client *username*  or  not client *username*
 
 Administrators will always see everything except mayOnlyRead.
 Not all combinations are useful ;-)
