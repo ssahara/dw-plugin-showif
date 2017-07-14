@@ -22,15 +22,16 @@ if(!defined('DOKU_INC')) die();
 
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
-    // match patterns
-    protected $entry_pattern = '<showif\b.*?>(?=.*?</showif>)';
-    protected $exit_pattern  = '</showif>';
-
     protected $mode;
+    protected $pattern = array();
     protected $conditions;
 
-    public function __construct() {
+    function __construct() {
         $this->mode = substr(get_class($this), 7); // drop 'syntax_'
+
+        // syntax patterns
+        $this->pattern[1] = '<showif\b.*?>(?=.*?</showif>)'; // entry
+        $this->pattern[4] = '</showif>';
     }
 
     function getSort(){ return 196; }
@@ -48,15 +49,18 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         );
     }
 
-    function accepts($mode){
+    function accepts($mode) {
         return true;
     }
 
+    /**
+     * Connect pattern to lexer
+     */
     function connectTo($mode) {
-        $this->Lexer->addEntryPattern($this->entry_pattern, $mode, $this->mode);
+        $this->Lexer->addEntryPattern($this->pattern[1], $mode, $this->mode);
     }
     function postConnect() {
-        $this->Lexer->addExitPattern($this->exit_pattern, $this->mode);
+        $this->Lexer->addExitPattern($this->pattern[4], $this->mode);
     }
 
 
