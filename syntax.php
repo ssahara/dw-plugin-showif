@@ -23,7 +23,7 @@ if(!defined('DOKU_INC')) die();
 class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
     protected $mode;
-    protected $pattern = array();
+    protected $pattern = [];
 
     function __construct() {
         // syntax mode, drop 'syntax_' from class name
@@ -111,7 +111,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         if ($format == 'xhtml') {
             $renderer->nocache(); // disable caching
 
-            list($state, $calls, $conditions) = $data;
+            list ($state, $calls, $conditions) = $data;
             if ($state != DOKU_LEXER_EXIT) return true;
 
             $show = FALSE;
