@@ -27,10 +27,11 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     protected $conditions;
 
     function __construct() {
-        $this->mode = substr(get_class($this), 7); // drop 'syntax_'
+        // syntax mode, drop 'syntax_' from class name
+        $this->mode = substr(get_class($this), 7);
 
         // syntax patterns
-        $this->pattern[1] = '<showif\b.*?>(?=.*?</showif>)'; // entry
+        $this->pattern[1] = '<showif\b[^>]*>(?=.*?</showif>)';
         $this->pattern[4] = '</showif>';
     }
 
