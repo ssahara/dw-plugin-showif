@@ -24,7 +24,6 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
     protected $mode;
     protected $pattern = array();
-    protected $conditions;
 
     function __construct() {
         // syntax mode, drop 'syntax_' from class name
@@ -69,14 +68,15 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
      * Handle the match
      */
     function handle($match, $state, $pos, Doku_Handler $handler){
-
+        static $conditions; // store auth conditions
+ 
         switch ($state) {
           case DOKU_LEXER_ENTER :
             // remove <showif and >
-            $conditions = substr($match, 8, -1);
-            $conditions = mb_strtolower($conditions, 'UTF-8');
+            $args = substr($match, 8, -1);
+            $args = mb_strtolower($args, 'UTF-8');
             // explode wanted auths
-            $this->conditions = array_map('trim', explode(",", $conditions));
+            $conditions = array_map('trim', explode(",", $args));
 
             $ReWriter = new Doku_Handler_Nest($handler->CallWriter, $this->mode);
             $handler->CallWriter = & $ReWriter;
@@ -98,7 +98,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
             $handler->CallWriter = & $ReWriter->CallWriter;
 
             // return a plugin instruction
-            return array($state, $calls, $this->conditions);
+            return $data = [$state, $calls, $conditions];
         }
 
         return false;
