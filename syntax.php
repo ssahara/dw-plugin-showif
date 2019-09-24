@@ -20,24 +20,14 @@
 // must be run within DokuWiki
 if(!defined('DOKU_INC')) die();
 
-class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
+class syntax_plugin_showif extends DokuWiki_Syntax_Plugin
+{
+    protected $mode, $pattern;
 
-    protected $mode;
-    protected $pattern = [];
-
-    function __construct() {
-        // syntax mode, drop 'syntax_' from class name
-        $this->mode = substr(get_class($this), 7);
-
-        // syntax patterns
-        $this->pattern[1] = '<showif\b[^>]*>(?=.*?</showif>)';
-        $this->pattern[4] = '</showif>';
-    }
-
-    function getSort(){ return 196; }
-    function getType(){ return 'container'; }
-    function getPType(){ return 'stack'; }
-    function getAllowedTypes() {
+    public function getSort(){ return 196; }
+    public function getType(){ return 'container'; }
+    public function getPType(){ return 'stack'; }
+    public function getAllowedTypes() {
         return array(
             'container',
             'formatting',
@@ -49,17 +39,31 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
         );
     }
 
-    function accepts($mode) {
+    public function accepts($mode)
+    {
         return true;
     }
 
     /**
      * Connect pattern to lexer
      */
-    function connectTo($mode) {
+    public function preConnect()
+    {
+        // syntax mode, drop 'syntax_' from class name
+        $this->mode = substr(get_class($this), 7);
+
+        // syntax patterns
+        $this->pattern[1] = '<showif\b[^>]*>(?=.*?</showif>)';
+        $this->pattern[4] = '</showif>';
+    }
+
+    public function connectTo($mode)
+    {
         $this->Lexer->addEntryPattern($this->pattern[1], $mode, $this->mode);
     }
-    function postConnect() {
+
+    public function postConnect()
+    {
         $this->Lexer->addExitPattern($this->pattern[4], $this->mode);
     }
 
@@ -67,7 +71,8 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     /**
      * Handle the match
      */
-    function handle($match, $state, $pos, Doku_Handler $handler){
+    public function handle($match, $state, $pos, Doku_Handler $handler)
+    {
         static $conditions; // store auth conditions
  
         switch ($state) {
@@ -105,7 +110,8 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
     /**
      * Create output
      */
-    function render($format, Doku_Renderer $renderer, $data) {
+    public function render($format, Doku_Renderer $renderer, $data)
+    {
         global $ID, $INFO;
 
         if ($format == 'xhtml') {
