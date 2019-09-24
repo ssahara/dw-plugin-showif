@@ -83,7 +83,7 @@ class syntax_plugin_showif extends DokuWiki_Syntax_Plugin {
 
           case DOKU_LEXER_UNMATCHED :
             // unmatched data is cdata
-            $handler->_addCall('cdata', array($match), $pos);
+            $handler->base($match, $state, $pos);
             // don't add any plugin instruction:
             return false;
 
